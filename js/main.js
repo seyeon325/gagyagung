@@ -34,6 +34,11 @@
       this.last = performance.now();
       requestAnimationFrame(t => this.frame(t));
       document.body.classList.add('ready');
+      document.body.classList.toggle('event-mode', GG.CONFIG.eventMode);
+      // 이어하기: 저장이 있으면 시작 화면에 버튼 표시, 상태가 바뀔 때마다 저장
+      this.ui.showContinue(!!GG.Save.read());
+      GG.bus.on('state', () => { if (this.mode === 'play' || this.mode === 'ending') { clearTimeout(this.saveT); this.saveT = setTimeout(() => GG.Save.write(this), 300); } });
+      this.saveTick = 0;
       try {
         const ic = document.createElement('canvas'); ic.width = 32; ic.height = 32;
         const ix = ic.getContext('2d'); ix.imageSmoothingEnabled = false;
@@ -76,15 +81,41 @@
         this.ui.startIntro(() => this.beginPlay());
       });
     },
-    beginPlay() {
+    /* 저장된 곳에서 이어하기 (인트로 없이 바로 플레이) */
+    continueJourney() {
+      const d = GG.Save.read();
+      if (!d || this.mode !== 'title' || this.starting) return this.startJourney();
+      this.starting = true;
+      GG.Audio.init();
+      GG.Audio.startBgm();
+      GG.Audio.sfx('select');
+      this.fade(() => {
+        this.starting = false;
+        this.world.reset();
+        GG.Save.apply(this, d);
+        this.world.applyState(this.state);
+        GG.Audio.setLayers(this.state.flags.palace_restored ? 4 : 1 + this.state.doneCount());
+        // 할머니가 우물로 걸어가던 중이었다면 다시 걸어가게
+        const g = this.state.missions.guide;
+        if (g && g.status === 'active' && g.step === 3) this.npcWalk({ id: 'grandma', to: [30.2, 30.3], dir: 'right', then: { do: 'completeMission', id: 'guide' } });
+        this.ui.showTitle(false);
+        this.updateCamera(0, true);
+        this.beginPlay(true);
+        this.ui.toast('지난번에 하던 곳에서 이어서 시작해요');
+      });
+    },
+    beginPlay(resumed) {
       this.mode = 'play';
       this.ui.showHud(true);
-      this.ui.controlsHint(true);
-      this.hintLeft = 9;
+      this.ui.controlsHint(!resumed);
+      this.hintLeft = resumed ? 0 : 9;
       this.lastArea = undefined;
+      GG.Input.lastInputAt = performance.now();
     },
     restart() { this.fade(() => this.doRestart()); },
     doRestart() {
+      GG.Save.clear();
+      this.ui.showContinue(false);
       if (this.dialogue.active) this.dialogue.end();
       this.ui.closeLetter();
       this.ui.hideEnding();
@@ -100,6 +131,9 @@
       this.ui.controlsHint(false);
       this.mode = 'title';
       this.ui.showTitle(true);
+      // 초기화 중에 예약된 자동 저장이 빈 저장을 다시 만들지 않도록
+      clearTimeout(this.saveT);
+      GG.Save.clear();
     },
     openMenu() { if (this.mode === 'play') this.ui.menuOpen(true); },
     closeMenu() { this.ui.menuOpen(false); },
@@ -141,6 +175,16 @@
       this.world.restoreZone('palace', o.gx, o.gy);
       GG.Audio.sfx('restore');
       GG.Audio.setLayers(4);
+    },
+    /* 첫 대화의 작은 성공 경험: 가온과 말을 나누면 근처 등불에 말빛이 켜짐 */
+    firstLight() {
+      const lamps = this.world.lightFirstLanterns(true);
+      const gaon = this.world.npcs.find(n => n.id === 'gaon');
+      if (gaon) this.world.burst(gaon.x, gaon.y - 12, 26);
+      GG.Audio.sfx('quest');
+      GG.Audio.haptic(25);
+      this.ui.toast('말을 나누자 등불에 [[말빛]]이 켜졌어요!', 'done');
+      return lamps;
     },
     replaceSign() {
       this.world.setSign(true);
@@ -256,6 +300,14 @@
 
     update(dt) {
       const I = GG.Input, w = this.world, p = w.player;
+      // 행사 모드: 한동안 아무 입력이 없으면 다음 사람을 위해 처음으로
+      if (GG.CONFIG.eventMode && this.mode !== 'title' && this.mode !== 'tour' && !this.starting
+        && performance.now() - I.lastInputAt > GG.CONFIG.idleResetSec * 1000) {
+        I.lastInputAt = performance.now();
+        this.restart();
+      }
+      // 개인 기기: 몇 초마다 위치 저장
+      if (this.mode === 'play' && (this.saveTick += dt) > 4) { this.saveTick = 0; GG.Save.write(this); }
       if (this.ui.letterShown) {
         if (I.take('act') || I.take('menu')) this.ui.closeLetter();
         w.update(dt); this.updateCamera(dt); I.endFrame(); return;
@@ -425,6 +477,7 @@
   };
 
   GG.Actions.showEnding = (n, g) => { g.cardQueued = true; };
+  GG.Actions.firstLight = (n, g) => { g.firstLight(); };
 
   GG.game = Game;
   window.addEventListener('DOMContentLoaded', () => {

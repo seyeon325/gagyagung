@@ -345,3 +345,56 @@ body:not(.is-touch) #dialog.done:not(:has(.dlg-choice)) .dlg-body::after {
   content: 'E'; position: absolute; right: 18px; bottom: -4px; font-size: 11px; line-height: 1; padding: 2px 4px; border: 1px solid #c9b48a; border-radius: 2px; color: var(--ink-soft);
 }
 #game { -webkit-touch-callout: none; }
+
+/* ── 2차 디벨롭: 체험 행사용 ── */
+.title-actions { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+#btn-start:not(.btn-big) { font-size: 16px; background: rgba(246, 239, 220, .92); }
+
+/* 진행 중인 미션 이름 */
+#quest-current { margin: 6px 0 0; font-size: 13px; color: var(--green-d); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+#quest-current b { padding: 1px 7px; border-radius: 3px; background: var(--gold); color: var(--wood-d); font-size: 12px; }
+#quest-current span { color: var(--ink-soft); }
+/* 미션 칸: 눌러서 목표 바꾸기 */
+#quest-list li { list-style: none; }
+button.q-item { font: inherit; cursor: pointer; min-height: 30px; }
+.q-item.focus { box-shadow: 0 0 0 2px var(--orange); }
+@media (pointer: coarse) { button.q-item { min-height: 34px; padding-left: 9px; padding-right: 10px; } }
+
+/* 엔딩: 충남 말 노트 · 설문 · 다음 체험자 */
+#ending-dialect { margin: 0 0 16px; padding: 12px 14px; border-radius: 3px; border: 2px solid #c9a96a; background: #fbf0cf; }
+.d-list { margin: 0 0 8px; padding: 0; list-style: none; display: grid; gap: 6px; }
+.d-list li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; font-size: 16px; }
+.d-list b { font-family: var(--font-title); font-size: 19px; color: var(--wood-d); }
+.d-std::before { content: '= '; color: var(--ink-soft); }
+.d-region { font-size: 12px; padding: 1px 7px; border-radius: 10px; background: var(--green); color: #fdf6e3; }
+.d-variants { margin: 4px 0 0; font-size: 14px; line-height: 1.7; word-break: keep-all; }
+.d-variants b { display: block; color: var(--green-d); }
+.d-variants small { color: var(--ink-soft); margin-left: 2px; }
+.btn-survey { grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; text-decoration: none; background: var(--gold-l); border-color: #8a6a3c; }
+.btn-next { grid-column: 1 / -1; background: var(--wood); color: #fdf6e3; border-color: var(--wood-d); }
+
+/* 가로 화면(높이가 낮을 때): HUD와 대화창을 더 낮게 */
+@media (max-height: 460px) and (orientation: landscape) {
+  #quest { width: min(300px, 42vw); padding: 6px 10px 7px; }
+  #quest-hint { font-size: 13px; margin: 2px 0 5px; line-height: 1.4; }
+  .quest-head { font-size: 13px; }
+  #quest-current { margin-top: 3px; }
+  #dialog { width: min(640px, calc(100vw - 210px)); left: calc(50% - 50px); min-height: 0; padding: 10px 12px; gap: 10px; max-height: 52vh; overflow-y: auto; }
+  .dlg-portrait { width: 52px; height: 52px; }
+  #dlg-portrait { width: 44px; height: 44px; }
+  #dlg-text { font-size: 15px; line-height: 1.55; min-height: 0; }
+  .dlg-choice { min-height: 40px; padding: 7px 12px; font-size: 15px; }
+  .action-btn { width: 72px; height: 72px; font-size: 14px; }
+  #place-banner { top: 14%; }
+  .intro-box { padding: 16px 18px 12px; }
+  #intro-text { min-height: 0; font-size: 16px; }
+}
+#quest-list { flex-wrap: wrap; }
+#quest-list li { flex: 0 0 auto; }
+button.q-item { white-space: nowrap; }
+@media (max-width: 520px) and (pointer: coarse) { #quest-list { gap: 4px; } button.q-item { padding-left: 6px; padding-right: 8px; gap: 4px; } }
+@media (max-height: 460px) and (orientation: landscape) {
+  #dlg-choices { flex-direction: row; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .dlg-choice { flex: 1 1 28%; min-width: 0; text-align: center; padding: 7px 8px; }
+  .dlg-choice .num { margin-right: 4px; }
+}

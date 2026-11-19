@@ -10,15 +10,12 @@
       { do: 'takeHeld' },
       { do: 'setStep', id: 'post', step: 2 },
       { do: 'emote', who: 'pondElder', kind: 'surprise' },
-      { who: 'pondElder', text: '오, 내게 온 서찰인가? 어디 보세…' },
-      { who: 'pondElder', text: '윗마을 벗이 보냈구먼! ‘모레 해거름에 느티나무 평상에서 윷놀이 한판’이라…' },
-      { who: 'pondElder', text: '[[모레]]면 내일의 다음 날, [[해거름]]은 해가 넘어갈 무렵이지.\n때와 곳을 정확히 알았으니 늦지 않게 가겠네!' },
-      { who: 'pondElder', text: '제대로 전해 줘서 고맙네. 말뜻을 바로 알아야 마음도 바로 닿는 법이지.' },
-      { do: 'completeMission', id: 'post' }
+      { who: 'pondElder', text: '오, 내 서찰이구먼! ‘모레 해거름에 느티나무 평상에서 윷놀이 한판’이라…' },
+      { who: 'pondElder', text: '[[모레]]는 내일의 다음 날, [[해거름]]은 해가 넘어갈 무렵이지.\n때와 곳을 정확히 전해 줘서 고맙네!' },
+      { do: 'completeMission', id: 'post' },
+      { do: 'npcWalk', id: 'pondElder', to: [24.3, 21.5], dir: 'right' }
     ] : [
-      { narr: '‘' + label + '’ 서찰함이다.' },
-      { narr: '서찰에 적힌 곳과는 다른 것 같다. 받는 이를 다시 읽어 볼까?' },
-      { choice: [
+      { prompt: '‘' + label + '’ 서찰함이다. 서찰에 적힌 곳과는 다른 것 같다. 받는 이를 다시 읽어 볼까?', choice: [
         { label: '서찰 다시 읽기', script: [{ do: 'openLetter' }] },
         { label: '그만두기', script: [] }
       ]}
@@ -50,8 +47,7 @@
           { do: 'ending' }
         ]},
         { script: [
-          { narr: '불이 꺼진 석등이다. 안쪽에서 아주 희미한 빛이 깜박인다.' },
-          { narr: '마을의 말빛을 모두 되찾으면 다시 불이 들어올 것 같다. (모은 말빛 {done} / {total})' }
+          { narr: '불이 꺼진 말빛 등이다. 세 곳의 말빛을 모두 되찾으면 불이 들어올 것 같다. (모은 말빛 {done} / {total})' }
         ]}
       ]
     },
@@ -76,10 +72,8 @@
           { choice: [
             { label: '쉬운 말 안내판으로 바꿔 달기', script: [
               { do: 'replaceSign' },
-              { narr: '안내판을 쉬운 말로 새로 바꿔 달았다!' },
-              { narr: '「{signNew}」' },
-              { who: 'grandma', text: '이제야 한눈에 들어오는구먼! 오른쪽으로 가면 마실 물이 있다는 게지.' },
-              { who: 'grandma', text: '고마우이, 젊은이. 얼른 가서 목 좀 축여야겠네.' },
+              { narr: '안내판을 쉬운 말로 바꿔 달았다!\n「{signNew}」' },
+              { who: 'grandma', text: '이제야 한눈에 들어오는구먼! 오른쪽에 마실 물이 있다는 게지. 고마우이!' },
               { do: 'setStep', id: 'guide', step: 3 },
               { do: 'npcWalk', id: 'grandma', to: [30.2, 30.3], dir: 'right', then: { do: 'completeMission', id: 'guide' } }
             ]},
@@ -91,9 +85,7 @@
           { narr: '할머니와 함께 어떤 말로 바꿀지 먼저 골라 보자.' }
         ]},
         { script: [
-          { narr: '빼곡한 글씨의 안내판이다.' },
-          { narr: '「{signOld}」' },
-          { narr: '…무슨 뜻인지 한 번에 알기 어렵다.' }
+          { narr: '빼곡한 글씨의 안내판이다.\n「{signOld}」\n…무슨 뜻인지 한 번에 알기 어렵다.' }
         ]}
       ]
     },

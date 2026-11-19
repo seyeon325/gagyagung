@@ -109,7 +109,12 @@
     },
     setLayers(n) { layers = n; },
     /* 휴대폰 진동 (지원하는 기기만, 소리를 끄면 함께 꺼짐) */
-    haptic(ms) { try { if (enabled && navigator.vibrate && GG.util.isTouch()) navigator.vibrate(ms); } catch (e) { /* 무시 */ } }
+    haptic(ms) {
+      try {
+        const ua = navigator.userActivation;
+        if (enabled && navigator.vibrate && GG.util.isTouch() && (!ua || ua.hasBeenActive)) navigator.vibrate(ms);
+      } catch (e) { /* 무시 */ }
+    }
   };
 
   document.addEventListener('visibilitychange', () => {

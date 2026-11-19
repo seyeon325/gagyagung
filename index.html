@@ -29,7 +29,10 @@
         <canvas class="logo-lantern" width="12" height="30"></canvas>
       </div>
       <p class="subtitle"><span class="deco"></span>잊힌 말을 깨우는 여행<span class="deco"></span></p>
-      <button id="btn-start" class="btn btn-primary btn-big">여행 시작하기</button>
+      <div class="title-actions">
+        <button id="btn-continue" class="btn btn-primary btn-big hidden">이어하기</button>
+        <button id="btn-start" class="btn btn-primary btn-big">여행 시작하기</button>
+      </div>
       <div class="controls-guide">
         <div class="guide-pc">
           <span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> · <kbd>방향키</kbd> 이동</span>
@@ -66,6 +69,7 @@
         <span class="quest-title"><i class="ico-light"></i>말빛 되찾기</span>
         <span id="quest-count">0 / 3</span>
       </div>
+      <p id="quest-current" class="hidden"></p>
       <p id="quest-hint"></p>
       <ul id="quest-list"></ul>
     </div>
@@ -118,6 +122,7 @@
           <h2 id="ending-title"></h2>
           <p id="ending-message"></p>
           <div id="ending-words"></div>
+          <div id="ending-dialect"></div>
           <div id="ending-centennial"></div>
         </div>
         <div class="card-box panel">
@@ -127,8 +132,10 @@
           <img id="card-img" alt="우리말 수호증">
           <div class="ending-actions">
             <button id="btn-card-save" class="btn btn-primary">수호증 저장하기</button>
+            <a id="btn-survey" class="btn btn-survey hidden" target="_blank" rel="noopener">1분 설문 참여하기</a>
             <button id="btn-ending-explore" class="btn">마을 더 둘러보기</button>
             <button id="btn-ending-restart" class="btn">처음부터 다시 하기</button>
+            <button id="btn-next-player" class="btn btn-next hidden">다음 체험자에게 넘기기</button>
           </div>
           <p class="card-tip">저장 버튼이 안 되면 수호증 그림을 길게 누르거나(휴대폰) 오른쪽 클릭(PC)해서 저장하세요.</p>
         </div>
@@ -199,6 +206,7 @@
 <script src="js/world/world.js"></script>
 <script src="js/systems/state.js"></script>
 <script src="js/systems/dialogue.js"></script>
+<script src="js/systems/save.js"></script>
 <script src="js/ui/card.js"></script>
 <script src="js/ui/ui.js"></script>
 <script src="js/main.js"></script>

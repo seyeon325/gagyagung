@@ -292,10 +292,53 @@
       this.npcs = GG.DATA.NPCS.map(d => new GG.NPC(d));
       this.player = new GG.Player(L.start.x * T, L.start.y * T, L.start.dir);
       this.particles = [];
+      this.objects.forEach(o => { o.forceLit = false; });
       this.critters = [];
       this.noteT = 3;
       this.time = 0;
       this.setSign(false);
+    }
+
+    /* 첫 대화의 작은 성공: 시작 지점(안내소 구역) 등불에 먼저 말빛을 켬 */
+    lightFirstLanterns(fx) {
+      const lamps = this.objects.filter(o => o.lantern === true && o.zone === 'guide');
+      lamps.forEach((o, i) => {
+        if (o.forceLit) return;
+        o.forceLit = true;
+        if (fx) setTimeout(() => this.burst(o.gx, o.gy, 14), i * 140);
+      });
+      return lamps;
+    }
+
+    /* 저장된 상태를 월드 모습에 반영 (이어하기) */
+    applyState(st) {
+      if (st.flags.met_gaon) this.lightFirstLanterns(false);
+      GG.DATA.MISSIONS.forEach(m => {
+        if (st.missions[m.id].status !== 'done') return;
+        this.restoreZone(m.zone, 0, 0, true);
+        this.spawnCritters(m.zone);
+      });
+      if (st.flags.palace_restored) { this.restoreZone('palace', 0, 0, true); this.spawnCritters('palace'); }
+      this.setSign(!!st.flags.sign_new);
+      for (const n of this.npcs) {
+        const a = n.data.after;
+        if (a && st.missions[a.mission] && st.missions[a.mission].status === 'done') {
+          n.x = n.homeX = a.x * 16; n.y = n.homeY = a.y * 16; n.dir = n.homeDir = a.dir || n.dir;
+        }
+      }
+    }
+
+    /* 지금 상호작용할 수 있는 대상 아래에 금빛 고리 */
+    renderTargetRing(ctx, t) {
+      let cx, cy, rx, ry;
+      if (t.kind === 'npc') { cx = t.ref.x; cy = t.ref.y; rx = 8; ry = 3; }
+      else { const o = t.ref; cx = o.x + o.w / 2; cy = o.sortY; rx = Math.min(o.w / 2 + 2, 22); ry = Math.max(3, Math.round(rx / 3)); }
+      const a = 0.55 + 0.35 * Math.sin(this.time * 6);
+      ctx.save();
+      ctx.strokeStyle = `rgba(255,214,110,${a.toFixed(2)})`;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.ellipse(Math.round(cx), Math.round(cy), rx, ry, 0, 0, Math.PI * 2); ctx.stroke();
+      ctx.restore();
     }
 
     setSign(fresh) {
@@ -329,7 +372,7 @@
     }
     zoneP(id) { const z = this.zones[id]; return z.full ? 1 : z.active ? U.smooth(z.t) : 0; }
     objP(o) {
-      if (o.pick) return 1;   // 집을 수 있는 물건은 늘 제 색으로 (구분이 쉽도록)
+      if (o.pick || o.forceLit) return 1;   // 집을 수 있는 물건·먼저 켜진 등불은 늘 제 색으로
       const z = this.zones[o.zone];
       if (!z || z.full) return z ? 1 : 0;
       if (!z.active) return 0;
@@ -415,6 +458,8 @@
           ctx.restore();
         }
       }
+
+      if (opts.target) this.renderTargetRing(ctx, opts.target);
 
       // 깊이 정렬 (아래쪽에 있을수록 나중에)
       const list = [];

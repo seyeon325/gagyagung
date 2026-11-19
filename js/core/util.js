@@ -36,7 +36,7 @@
       held: state && state.held && items[state.held] ? items[state.held].name : '',
       item: ctx && ctx.item && items[ctx.item] ? items[ctx.item].name : ''
     };
-    (D.DIALECT ? D.DIALECT.entries : []).forEach(e => { tokens[e.id] = e.expr; tokens[e.id + '.std'] = e.standard; });
+    (D.DIALECT ? D.DIALECT.entries : []).forEach(e => { tokens[e.id] = e.expr; tokens[e.id + '.std'] = e.standard; tokens[e.id + '.region'] = e.region || ''; });
     return String(text).replace(/\{([\w.]+)\}/g, (m, k) => (k in tokens ? tokens[k] : m));
   };
 

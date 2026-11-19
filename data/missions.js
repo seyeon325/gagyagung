@@ -3,11 +3,12 @@
  * step  : 진행 중일 때의 세부 단계 (hints 의 번호)
  * zone  : 완료 시 색과 등불이 돌아오는 구역 (js/world/layout.js 의 zones)
  * restoreAt: 색이 퍼져 나가기 시작하는 곳 (NPC id 또는 사물 id)
+ * where : 시작 전 미션 칸을 누르면 알려 주는 찾아갈 곳
  */
 GG.DATA.MISSIONS = [
   {
     id: 'market', no: '01', title: '충남 말 장터', short: '장터',
-    zone: 'market', npc: 'merchant', restoreAt: 'merchant',
+    zone: 'market', npc: 'merchant', restoreAt: 'merchant', where: '서쪽 장터의 아주머니',
     summary: '상인의 말을 귀 기울여 듣고, 원하는 물건을 찾아 전해 주세요.',
     hints: {
       1: '장터 바구니에서 아주머니가 말한 [[{d01}]]를 찾아 가져다 드리세요.',
@@ -16,7 +17,7 @@ GG.DATA.MISSIONS = [
   },
   {
     id: 'post', no: '02', title: '말길 서찰방', short: '서찰방',
-    zone: 'post', npc: 'postman', restoreAt: 'pondElder',
+    zone: 'post', npc: 'postman', restoreAt: 'pondElder', where: '동쪽 서찰방 아저씨',
     summary: '서찰 속 우리말을 풀어 받는 사람을 찾고, 직접 배달해 주세요.',
     hints: {
       1: '서찰을 읽고 받는 사람 집의 [[서찰함]]에 넣어 주세요. 들고 있는 서찰을 누르면 다시 읽을 수 있어요.'
@@ -24,7 +25,7 @@ GG.DATA.MISSIONS = [
   },
   {
     id: 'guide', no: '03', title: '쉬운 말 안내소', short: '안내소',
-    zone: 'guide', npc: 'grandma', restoreAt: 'guideSign',
+    zone: 'guide', npc: 'grandma', restoreAt: 'guideSign', where: '안내판 앞 할머니',
     summary: '어려운 안내문을 누구나 알기 쉬운 우리말로 바꿔 주세요.',
     hints: {
       1: '할머니와 함께 안내판의 어려운 말을 쉬운 말로 골라 보세요.',

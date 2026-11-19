@@ -78,6 +78,11 @@
       $('#btn-card-save').addEventListener('click', () => this.saveCard());
       $('#btn-ending-explore').addEventListener('click', () => game.closeEnding());
       $('#btn-ending-restart').addEventListener('click', () => game.restart());
+      $('#btn-continue').addEventListener('click', () => game.continueJourney());
+      $('#btn-next-player').addEventListener('click', () => game.restart());
+      this.show($('#btn-next-player'), GG.CONFIG.eventMode);
+      const sv = $('#btn-survey');
+      if (GG.CONFIG.surveyUrl) { sv.href = GG.CONFIG.surveyUrl; this.show(sv, true); }
       window.addEventListener('resize', () => this.placeInv());
     },
 
@@ -146,8 +151,13 @@
       $('#ending-words').innerHTML = '<p class="w-head">이번 여행에서 만난 말</p>' +
         row('장터', d.map(x => `${x.expr} = ${x.standard}`)) +
         row('서찰방', Object.keys(gl).map(k => `${k}: ${gl[k]}`)) +
-        row('안내소', q.map(x => `${x.hard} → ${x.options[x.answer]}`)) +
-        `<p class="w-note">장터의 말은 국립국어원 우리말샘에 ‘충청’ 등의 방언으로 실려 있어요.</p>`;
+        row('안내소', q.map(x => `${x.hard} → ${x.options[x.answer]}`));
+      // 지역어 노트: 쓰인 지역과 출처, 같은 말의 여러 이름
+      const V = D.DIALECT.variants, esc = GG.util.escape;
+      $('#ending-dialect').innerHTML = `<p class="w-head">충남 말 노트</p>` +
+        `<ul class="d-list">${d.map(x => `<li><b>${esc(x.expr)}</b> <span class="d-std">${esc(x.standard)}</span><span class="d-region">${esc(x.region)}</span></li>`).join('')}</ul>` +
+        (V ? `<p class="d-variants"><b>${esc(V.title)}</b> ${V.items.map(v => `${esc(v.expr)}<small>(${esc(v.region)})</small>`).join(' · ')}</p>` : '') +
+        `<p class="w-note">사용 지역과 뜻은 국립국어원 우리말샘에 실린 그대로예요. 같은 것도 고장마다 부르는 이름이 다르고, 그 이름에는 그 고장의 생활이 담겨 있어요.</p>`;
       this.show(e.ending, true);
       e.ending.querySelector('.ending-scroll').scrollTop = 0;
       this.renderCard();
@@ -229,11 +239,29 @@
     },
     buildQuestList() {
       this.el.questList.innerHTML = GG.DATA.MISSIONS.map(m =>
-        `<li class="q-item" data-id="${m.id}" title="미션 ${m.no} · ${m.title}"><i class="q-dot"></i><span class="q-name">${m.short}</span></li>`).join('');
+        `<li><button class="q-item" data-id="${m.id}" title="미션 ${m.no} · ${m.title}"><i class="q-dot"></i><span class="q-name">${m.short}</span></button></li>`).join('');
+      // 미션 칸을 누르면: 진행 중이면 그 미션 목표로 바꿔 보여 주고, 시작 전이면 찾아갈 곳을 알려 줌
+      this.el.questList.addEventListener('click', ev => {
+        const b = ev.target.closest('.q-item');
+        if (!b) return;
+        const st = this.game.state, m = GG.DATA.MISSIONS.find(x => x.id === b.dataset.id), s = st.status(m.id);
+        GG.Audio.sfx('select');
+        if (s === 'active') { st.focus = m.id; this.refreshHud(); }
+        else if (s === 'available') this.toast(`미션 ${m.no} [[${m.title}]] · ${m.where}를 찾아가세요`);
+        else this.toast(`미션 ${m.no} [[${m.title}]] · 완료!`, 'done');
+      });
+    },
+    showContinue(on) {
+      this.show($('#btn-continue'), on);
+      const s = $('#btn-start');
+      s.textContent = on ? '처음부터 시작' : '여행 시작하기';
+      s.classList.toggle('btn-primary', !on);
+      s.classList.toggle('btn-big', !on);
     },
     refreshHud() {
       const st = this.game.state, S = GG.DATA.STORY.hints;
-      let hint;
+      const cur = $('#quest-current');
+      let hint, curM = null;
       if (st.flags.palace_restored) hint = S.restored;
       else if (!st.flags.met_gaon) hint = S.start;
       else if (st.allDone()) hint = S.allDone;
@@ -242,15 +270,24 @@
         const m = act.find(x => x.id === st.focus) || act[0];
         const ms = m && st.missions[m.id];
         hint = m && m.hints && m.hints[ms.step] ? m.hints[ms.step] : S.explore;
+        if (m && m.hints && m.hints[ms.step]) curM = m;
       }
+      // 진행 중인 미션 이름을 목표 문구 위에 따로 표시
+      if (curM) {
+        const steps = Object.keys(curM.hints).length, step = st.missions[curM.id].step;
+        cur.innerHTML = `<b>미션 ${curM.no}</b> ${GG.util.escape(curM.title)}${steps > 1 ? ` <span>${step}/${steps}단계</span>` : ''}`;
+      }
+      this.show(cur, !!curM);
       this.el.questHint.innerHTML = GG.rich(GG.fmt(hint, st));
       this.el.questCount.textContent = `${st.doneCount()} / ${GG.DATA.MISSIONS.length}`;
       this.el.questList.querySelectorAll('.q-item').forEach(li => {
         const s = st.status(li.dataset.id);
         li.dataset.state = s;
+        li.classList.toggle('focus', !!curM && curM.id === li.dataset.id);
         const label = { available: '시작 전', active: '진행 중', done: '완료' }[s];
         li.setAttribute('aria-label', `${li.textContent} ${label}`);
       });
+      this.placeInv && this.placeInv();
     },
     toast(text, kind) {
       const t = document.createElement('div');
