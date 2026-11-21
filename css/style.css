@@ -398,3 +398,43 @@ button.q-item { white-space: nowrap; }
   .dlg-choice { flex: 1 1 28%; min-width: 0; text-align: center; padding: 7px 8px; }
   .dlg-choice .num { margin-right: 4px; }
 }
+
+/* ── 최종 디벨롭 ── */
+/* 시작 화면: 로고 → 부제 → 한 줄 목표 → 시작 버튼 → 조작 안내 순으로 위계 */
+.title-goal { margin: -4px 0 6px; max-width: 30em; padding: 0 12px; font-size: clamp(15px, 2.1vw, 18px); line-height: 1.6; color: #fbecc6; text-shadow: 0 2px 0 rgba(0, 0, 0, .6); word-break: keep-all; }
+.title-goal b { color: var(--gold-l); }
+.controls-guide { opacity: .85; font-size: 13px; }
+@media (max-height: 460px) { .title-goal { font-size: 14px; margin: 0 0 2px; } }
+
+/* 미션 완료 배너 */
+#mission-banner {
+  position: absolute; left: 50%; top: 30%; transform: translate(-50%, 10px) scale(.96);
+  display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 14px 30px 14px;
+  background: rgba(36, 62, 50, .94); color: #fdf6e3; border: 3px solid #8fcf9a; border-radius: 4px;
+  box-shadow: inset 0 0 0 2px #2c4d42, 0 5px 0 rgba(0, 0, 0, .35);
+  opacity: 0; pointer-events: none; transition: opacity .35s, transform .35s; z-index: 6; text-align: center; max-width: calc(100vw - 32px);
+}
+#mission-banner.in { opacity: 1; transform: translate(-50%, 0) scale(1); }
+#mission-banner strong { font-family: var(--font-title); font-size: clamp(24px, 4vw, 32px); letter-spacing: .04em; }
+#mission-banner small { font-size: 15px; color: #d9ecd3; word-break: keep-all; }
+.mb-seal { width: 38px; height: 38px; display: grid; place-items: center; margin-top: -34px; border-radius: 3px; transform: rotate(-6deg);
+  background: var(--red); color: #fbecc6; font-family: var(--font-title); font-size: 20px; box-shadow: 0 0 0 2px #fbecc6, 0 3px 0 rgba(0, 0, 0, .3); }
+
+/* 엔딩 둘러보기 건너뛰기 */
+#btn-tour-skip { position: absolute; right: calc(14px + var(--safe-r)); bottom: calc(18px + var(--safe-b)); z-index: 5; min-height: 44px; }
+.btn-ghost-light { background: rgba(30, 22, 15, .55); color: #f6e7c4; border-color: rgba(246, 231, 196, .5); box-shadow: none; }
+
+/* 행사 모드: 자동 초기화 안내 */
+#idle-warn { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(15, 10, 6, .45); z-index: 15; }
+.idle-box { width: min(380px, 100%); padding: 20px 20px 18px; text-align: center; }
+.idle-box p { margin: 0 0 14px; font-size: 17px; line-height: 1.6; word-break: keep-all; }
+.idle-box b { color: var(--red); font-size: 20px; }
+.idle-box .btn { width: 100%; }
+#ending-deeds { margin: 0 0 14px; padding: 0; list-style: none; display: grid; gap: 6px; }
+#ending-deeds li { position: relative; padding-left: 22px; font-size: 15px; line-height: 1.55; word-break: keep-all; }
+#ending-deeds li::before { content: ''; position: absolute; left: 4px; top: .45em; width: 9px; height: 9px; border-radius: 1px; background: var(--gold); box-shadow: 0 0 6px rgba(255, 200, 90, .8); }
+#ending-message { padding-top: 12px; border-top: 2px dashed #d4c39c; }
+/* 가운데 정렬 배너가 화면 절반 폭으로 줄어들지 않도록 */
+#mission-banner { width: max-content; }
+#mission-banner small { white-space: nowrap; }
+@media (max-width: 400px) { #mission-banner { padding: 12px 18px; } #mission-banner small { font-size: 14px; } }

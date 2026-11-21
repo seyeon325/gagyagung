@@ -81,9 +81,46 @@
       $('#btn-continue').addEventListener('click', () => game.continueJourney());
       $('#btn-next-player').addEventListener('click', () => game.restart());
       this.show($('#btn-next-player'), GG.CONFIG.eventMode);
-      const sv = $('#btn-survey');
-      if (GG.CONFIG.surveyUrl) { sv.href = GG.CONFIG.surveyUrl; this.show(sv, true); }
+      // 설문 버튼: 올바른 http(s) 주소가 있을 때만 보임 (비었거나 잘못되면 숨김 → 빈 페이지로 가지 않음)
+      const sv = $('#btn-survey'), url = String(GG.CONFIG.surveyUrl || '').trim();
+      if (/^https?:\/\/\S+\.\S+/.test(url)) { sv.href = url; this.show(sv, true); }
+      $('#btn-tour-skip').addEventListener('click', () => game.finishTour());
+      $('#btn-idle-stay').addEventListener('click', () => { GG.Input.lastInputAt = performance.now(); this.idleWarn(null); });
       window.addEventListener('resize', () => this.placeInv());
+    },
+
+    /* ── 미션 완료 배너 (가운데 크게, 잠깐) ── */
+    missionBanner(title, sub) {
+      const b = $('#mission-banner');
+      b.querySelector('strong').textContent = title;
+      b.querySelector('small').textContent = sub;
+      b.classList.remove('in'); void b.offsetWidth; b.classList.add('in');
+      clearTimeout(this.mbT);
+      this.mbT = setTimeout(() => b.classList.remove('in'), 2800);
+    },
+
+    /* ── 행사 모드: 자동 초기화 직전 안내 (sec=null 이면 숨김) ── */
+    idleWarn(sec) {
+      const w = $('#idle-warn');
+      if (sec == null) { if (!w.classList.contains('hidden')) this.show(w, false); return; }
+      this.show(w, true);
+      const s = String(sec);
+      const c = $('#idle-count');
+      if (c.textContent !== s) c.textContent = s;
+    },
+    tourSkip(on) { this.show($('#btn-tour-skip'), on); },
+
+    /* 처음으로 돌아갈 때 이전 체험자의 흔적을 지움 */
+    resetTraces() {
+      this.el.cardName.value = '';
+      this.el.cardImg.removeAttribute('src');
+      this.cardCanvas = null;
+      this.el.toasts.innerHTML = '';
+      this.el.banner.classList.remove('in');
+      $('#mission-banner').classList.remove('in');
+      this.el.letterGloss.innerHTML = '';
+      this.lastHeld = undefined;
+      $('#menu-main') && this.menuPage('main');
     },
 
     /* ── 들고 있는 물건 ── */
@@ -144,6 +181,7 @@
     showEnding() {
       const E = GG.DATA.STORY.ending, D = GG.DATA, e = this.el;
       $('#ending-title').textContent = E.title;
+      $('#ending-deeds').innerHTML = (E.deeds || []).map(t => `<li>${GG.rich(GG.fmt(t, this.game.state))}</li>`).join('');
       $('#ending-message').innerHTML = GG.rich(E.message);
       $('#ending-centennial').innerHTML = GG.rich(E.centennial);
       const d = D.DIALECT.entries, q = D.PUBLIC_LANGUAGE.quiz, gl = D.LETTER.gloss;
@@ -151,7 +189,7 @@
       $('#ending-words').innerHTML = '<p class="w-head">이번 여행에서 만난 말</p>' +
         row('장터', d.map(x => `${x.expr} = ${x.standard}`)) +
         row('서찰방', Object.keys(gl).map(k => `${k}: ${gl[k]}`)) +
-        row('안내소', q.map(x => `${x.hard} → ${x.options[x.answer]}`));
+        row('안내소', q.map(x => x.recap || `${x.hard} → ${x.options[x.answer]}`));
       // 지역어 노트: 쓰인 지역과 출처, 같은 말의 여러 이름
       const V = D.DIALECT.variants, esc = GG.util.escape;
       $('#ending-dialect').innerHTML = `<p class="w-head">충남 말 노트</p>` +

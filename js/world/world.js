@@ -540,6 +540,7 @@
         if (target && target.kind === 'npc' && target.ref === n) icon = this.icons.talk;
         if (n.emote) icon = this.spr('emote', { kind: n.emote }).c;
         if (icon) ctx.drawImage(icon, Math.round(n.x - icon.width / 2), Math.round(n.headY - icon.height - 3 + bob));
+        if (target && target.kind === 'npc' && target.ref === n) this.drawKeyHint(ctx, n.x + 8, n.headY - 13 + bob);
       }
       if (st.held) {
         const ic = this.spr('itemIcon', { id: st.held }).c, pl = this.player;
@@ -548,7 +549,13 @@
       if (target && target.kind === 'obj') {
         const icon = this.icons.talk;
         ctx.drawImage(icon, Math.round(target.x - icon.width / 2), Math.round(target.y - icon.height + bob));
+        this.drawKeyHint(ctx, target.x + 8, target.y - 10 + bob);
       }
+    }
+    /* PC: 말풍선 옆에 [E] 키 표시 (터치 기기는 오른쪽 아래 버튼이 대신함) */
+    drawKeyHint(ctx, x, y) {
+      if (GG.util.isTouch()) return;
+      ctx.drawImage(this.spr('keyE').c, Math.round(x), Math.round(y));
     }
 
     renderDebug(ctx, x0, y0, x1, y1) {

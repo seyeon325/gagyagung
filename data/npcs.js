@@ -28,10 +28,10 @@
 (function () {
   const PL = GG.DATA.PUBLIC_LANGUAGE;
   const quizScript = PL.quiz.map((q, n) => ({
-    prompt: (n === 0 ? '먼저 ' : n === 1 ? '다음은 ' : '마지막으로 ') + '‘[[' + q.hard + ']]’.\n어떤 말로 바꾸면 좋을까?',
+    prompt: q.prompt || ((n === 0 ? '먼저 ' : '다음은 ') + '‘[[' + q.hard + ']]’.\n어떤 말로 바꾸면 좋을까?'),
     choice: q.options.map((label, i) => (i === q.answer
       ? { label, script: [q.right] }
-      : { label, script: [q.wrong], retry: true }))
+      : { label, script: [(q.wrongs && q.wrongs[i]) || q.wrong], retry: true }))
   }));
 
   GG.DATA.NPCS = [
@@ -183,13 +183,13 @@
           { do: 'startMission', id: 'guide' },
           { do: 'setStep', id: 'guide', step: 1 }
         ].concat(quizScript, [
-          '이제 알겠어! 이 쉬운 말로 [[안내판]]을 바꿔 달아 주겠나?',
+          '이제 알겠어! 이 문장으로 [[안내판]]을 바꿔 달아 주겠나?',
           { do: 'setStep', id: 'guide', step: 2 }
         ])},
         { when: { step: { guide: 1 } }, script: [
           '처음부터 다시 같이 골라 보세.'
         ].concat(quizScript, [
-          '이 쉬운 말로 [[안내판]]을 바꿔 달아 주겠나?',
+          '이 문장으로 [[안내판]]을 바꿔 달아 주겠나?',
           { do: 'setStep', id: 'guide', step: 2 }
         ])},
         { when: { step: { guide: 2 } }, script: [

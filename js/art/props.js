@@ -327,6 +327,12 @@
     else if (k === 'sweat') { const c = '#5b8fc7'; p.px(5, 1, c); p.vline(4, 2, 3, c); p.vline(6, 2, 3, c); p.hline(4, 6, 4, c); p.px(5, 5, '#2f5f96'); p.px(5, 3, '#cfe3f7'); }
     else { const c = '#e08a2e'; p.vline(5, 1, 4, c); p.px(5, 6, c); }
   }, true);
+  /* 키 안내: [E] (PC에서 상호작용 아이콘 옆) */
+  S.keyE = () => A.sprite(9, 10, p => {
+    p.rect(0, 0, 9, 9, '#fbf5e6'); p.hline(0, 8, 8, '#c9b48a'); p.hline(1, 7, 9, '#6b5644');
+    const c = '#3a2a1e';
+    p.vline(3, 2, 6, c); p.hline(3, 6, 2, c); p.hline(3, 5, 4, c); p.hline(3, 6, 6, c);
+  }, true);
   S.butterfly = v => A.sprite(5, 3, p => {
     const c = v.color, d = A.shade(v.color, -0.3);
     if (v.f) { p.px(0, 0, c); p.px(1, 1, d); p.px(2, 1, '#3a2a1e'); p.px(3, 1, d); p.px(4, 0, c); p.px(0, 1, c); p.px(4, 1, c); }

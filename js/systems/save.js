@@ -33,7 +33,11 @@
       } catch (e) { return null; }
     },
 
-    clear() { try { localStorage.removeItem('gagyagung_' + KEY); } catch (e) { /* 저장 불가 환경 */ } },
+    /* 행사 모드에서는 아무것도 지우지 않음 → 같은 기기의 개인 저장에 영향을 주지 않음 */
+    clear() {
+      if (!this.enabled) return;
+      try { localStorage.removeItem('gagyagung_' + KEY); } catch (e) { /* 저장 불가 환경 */ }
+    },
 
     /* 저장된 상태를 게임 상태에 덮어씀 (월드 반영은 World.applyState) */
     apply(game, d) {

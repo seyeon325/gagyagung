@@ -115,7 +115,13 @@
     restart() { this.fade(() => this.doRestart()); },
     doRestart() {
       GG.Save.clear();
-      this.ui.showContinue(false);
+      this.ui.showContinue(!!GG.Save.read());
+      this.ui.resetTraces();   // 이전 체험자의 이름·알림 등이 남지 않도록
+      this.ui.tourSkip(false);
+      this.ui.idleWarn(null);
+      this.cardQueued = false;
+      this.world.player.clearPath();
+      this.tapMark = null;
       if (this.dialogue.active) this.dialogue.end();
       this.ui.closeLetter();
       this.ui.hideEnding();
@@ -165,7 +171,7 @@
       this.world.emote(m.npc, 'note', 3);
       if (m.restoreAt !== m.npc) this.world.emote(m.restoreAt, 'heart', 3);
       GG.Audio.setLayers(1 + this.state.doneCount());
-      this.ui.toast(`[[${m.short}]]에 말빛이 돌아왔어요! (${this.state.doneCount()} / ${GG.DATA.MISSIONS.length})`, 'done');
+      this.ui.missionBanner(`미션 ${m.no} 완료`, `${m.short}에 말빛이 돌아왔어요  ·  ${this.state.doneCount()} / ${GG.DATA.MISSIONS.length}`);
       if (this.state.allDone()) setTimeout(() => { if (this.mode === 'play') this.ui.toast('궁궐 마당의 [[말빛 등]]으로 가 보세요', 'quest'); }, 2600);
     },
     restorePalace() {
@@ -210,6 +216,7 @@
       if (!this.endingQueued) return;
       this.endingQueued = false;
       this.mode = 'tour';
+      this.ui.tourSkip(true);
       this.ui.showHud(false);
       this.ui.controlsHint(false);
       this.world.player.clearPath();
@@ -229,6 +236,8 @@
       }
     },
     finishTour() {
+      if (this.mode !== 'tour') return;
+      this.ui.tourSkip(false);
       this.tour = null;
       this.ui.tourCaption(null);
       this.mode = 'ending';
@@ -300,11 +309,13 @@
 
     update(dt) {
       const I = GG.Input, w = this.world, p = w.player;
-      // 행사 모드: 한동안 아무 입력이 없으면 다음 사람을 위해 처음으로
-      if (GG.CONFIG.eventMode && this.mode !== 'title' && this.mode !== 'tour' && !this.starting
-        && performance.now() - I.lastInputAt > GG.CONFIG.idleResetSec * 1000) {
-        I.lastInputAt = performance.now();
-        this.restart();
+      // 행사 모드: 한동안 아무 입력이 없으면 다음 사람을 위해 처음으로.
+      // 마지막 몇 초는 안내와 [계속할게요] 버튼을 보여 주고, 어떤 입력이든 들어오면 취소.
+      if (GG.CONFIG.eventMode) {
+        const watching = this.mode !== 'title' && this.mode !== 'tour' && !this.starting;
+        const idle = (performance.now() - I.lastInputAt) / 1000, C = GG.CONFIG;
+        if (watching && idle > C.idleResetSec) { I.lastInputAt = performance.now(); this.ui.idleWarn(null); this.restart(); }
+        else this.ui.idleWarn(watching && idle > C.idleResetSec - C.idleWarnSec ? Math.ceil(C.idleResetSec - idle) : null);
       }
       // 개인 기기: 몇 초마다 위치 저장
       if (this.mode === 'play' && (this.saveTick += dt) > 4) { this.saveTick = 0; GG.Save.write(this); }
